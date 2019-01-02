@@ -95,7 +95,7 @@ module.exports = function ProgressEndCompressPlugin(options) {
                           password: config.password
                         }).then(function() {
                           ssh.putFile(path.join(targetDir, compressFile), config.romotePath + compressFile).then(function(Contents) {
-                            console.log(chalk.green.bold(compressFile + ' was successfully upload to ' + config.host + ': ' + config.romotePath));
+                            console.log(chalk.green.bold(compressFile + ' had been successfully uploaded to ' + config.host + ': ' + config.romotePath));
                           }, function(error) {
                             console.log(chalk.red.bold("Something's wrong --> "));
                             console.log(error)

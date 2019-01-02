@@ -22,7 +22,7 @@ new ProgressBarPlugin({
     host: '192.168.3.116',
     username: 'root',
     port: 22,
-    password: 'Reedsec888',
+    password: '123456',
     romotePath: '/home/reedsec/web/web-api-c2b/web-view/',
     replaceDirectly: false
   }

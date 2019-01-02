@@ -1,6 +1,6 @@
 {
   "name": "progress-end-compress-webpack-plugin",
-  "version": "1.0.4",
+  "version": "1.0.8",
   "description": "webpack plugin tgz build file use ssh upload to another server",
   "main": "index.js",
   "scripts": {
