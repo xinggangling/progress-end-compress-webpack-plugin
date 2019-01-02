@@ -1,0 +1,35 @@
+{
+  "name": "progress-end-compress-webpack-plugin",
+  "version": "1.0.4",
+  "description": "webpack plugin tgz build file use ssh upload to another server",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xinggangling/progress-end-compress-webpack-plugin.git"
+  },
+  "keywords": [
+    "webpack",
+    "plugin",
+    "progress",
+    "compress"
+  ],
+  "author": "0xg",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/xinggangling/progress-end-compress-webpack-plugin/issues"
+  },
+  "homepage": "https://github.com/xinggangling/progress-end-compress-webpack-plugin#readme",
+  "dependencies": {
+    "chalk": "^1.1.1",
+    "object.assign": "^4.0.1",
+    "node-ssh": "^5.1.2",
+    "progress": "^1.1.8",
+    "compressing": "1.4.0"
+  },
+  "peerDependencies": {
+    "webpack": "^1.3.0 || ^2 || ^3 || ^4"
+  }
+}
