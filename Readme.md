@@ -1,5 +1,7 @@
 # progress-end-compress-webpack-plugin
 
+=========================================================
+
 ## Installation
 
 ```
@@ -10,12 +12,13 @@ npm i -D progress-end-compress-webpack-plugin
 
 ```
 const ProgressEndCompressPlugin = require('progress-end-compress-webpack-plugin');
-new ProgressBarPlugin({
+new ProgressEndCompressPlugin({
   compressDir: {
     paths: [{
       sourceDir: path.resolve(__dirname, 'dist'),
       targetDir: path.resolve(__dirname),
-      name: 'dist.' + nowString
+      name: 'dist',
+      hash: [hash]
     }]
   },
   sshConfig: {
@@ -32,3 +35,7 @@ script: {
   build: 'webpack webpack.config.js --useSsh'
 }
 ```
+
+## Image Example
+
+![图片]

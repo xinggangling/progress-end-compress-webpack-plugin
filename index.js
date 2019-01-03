@@ -80,7 +80,9 @@ module.exports = function ProgressEndCompressPlugin(options) {
               try {
                 var sourceDir = options.compressDir.paths[i].sourceDir;
                 var targetDir = options.compressDir.paths[i].targetDir;
-                var compressFile = options.compressDir.paths[i].name + '.tgz';
+                var name = options.compressDir.paths[i].name;
+                var hash = options.compressDir.paths[i].hash || Date.now();
+                var compressFile = name + '.' + hash + '.tgz';
                 var compressPromise = new Promise(function() {
                   var self = this;
                   compressing.tgz.compressDir(sourceDir, path.join(targetDir, compressFile))
@@ -101,9 +103,16 @@ module.exports = function ProgressEndCompressPlugin(options) {
                             console.log(error)
                           }).then(function() {
                             if (config.replaceDirectly) {
-                              ssh.execCommand('tar zxvf ' + compressFile, { cwd: config.romotePath }).then(function(result) {
+                              ssh.execCommand('rm -rf ' + name, { cwd: config.romotePath }).then(function(result) {
                                 console.log('STDOUT: ' + result.stdout)
-                                console.log('STDERR: ' + result.stderr)
+                                if (result.stderr)
+                                  console.log('STDERR: ' + result.stderr)
+                              }).then(function() {
+                                ssh.execCommand('tar zxvf ' + compressFile, { cwd: config.romotePath }).then(function(result) {
+                                  console.log('STDOUT: ' + result.stdout)
+                                  if (result.stderr)
+                                    console.log('STDERR: ' + result.stderr)
+                                })
                               })
                             }
                           })
