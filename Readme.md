@@ -1,7 +1,5 @@
 # progress-end-compress-webpack-plugin
 
-=========================================================
-
 ## Installation
 
 ```
@@ -38,4 +36,13 @@ script: {
 
 ## Image Example
 
-![图片]
+#### building
+>![图片](https://github.com/xinggangling/progress-end-compress-webpack-plugin/blob/master/building.png)
+
+#### builded
+>![图片](https://github.com/xinggangling/progress-end-compress-webpack-plugin/blob/master/builded.png)
+
+#### server side
+>![图片](https://github.com/xinggangling/progress-end-compress-webpack-plugin/blob/master/server_side.png)
+>
+>if set replaceDirectly = true; build folder will be replace directly.
