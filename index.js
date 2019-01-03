@@ -83,6 +83,7 @@ module.exports = function ProgressEndCompressPlugin(options) {
                 var name = options.compressDir.paths[i].name;
                 var hash = options.compressDir.paths[i].hash || Date.now();
                 var compressFile = name + '.' + hash + '.tgz';
+                var rename = options.compressDir.paths[i].rename;
                 var compressPromise = new Promise(function() {
                   var self = this;
                   compressing.tgz.compressDir(sourceDir, path.join(targetDir, compressFile))
@@ -97,22 +98,33 @@ module.exports = function ProgressEndCompressPlugin(options) {
                           password: config.password
                         }).then(function() {
                           ssh.putFile(path.join(targetDir, compressFile), config.romotePath + compressFile).then(function(Contents) {
-                            console.log(chalk.green.bold(compressFile + ' had been successfully uploaded to ' + config.host + ': ' + config.romotePath));
+                            console.log(chalk.green.bold(compressFile + ' has been successfully uploaded to ' + config.host + ': ' + config.romotePath));
                           }, function(error) {
                             console.log(chalk.red.bold("Something's wrong --> "));
                             console.log(error)
                           }).then(function() {
                             if (config.replaceDirectly) {
                               ssh.execCommand('rm -rf ' + name, { cwd: config.romotePath }).then(function(result) {
-                                console.log('STDOUT: ' + result.stdout)
+                                if (result.stdout)
+                                  console.log('STDOUT: ' + result.stdout)
                                 if (result.stderr)
                                   console.log('STDERR: ' + result.stderr)
                               }).then(function() {
                                 ssh.execCommand('tar zxvf ' + compressFile, { cwd: config.romotePath }).then(function(result) {
-                                  console.log('STDOUT: ' + result.stdout)
+                                  if (result.stdout)
+                                      console.log('STDOUT: ' + result.stdout)
                                   if (result.stderr)
                                     console.log('STDERR: ' + result.stderr)
                                 })
+                              }).then(function() {
+                                if (rename) {
+                                  ssh.execCommand('mv ' + compressFile + ' ' + rename, { cwd: config.romotePath }).then(function(result) {
+                                    if (result.stdout)
+                                      console.log('STDOUT: ' + result.stdout)
+                                    if (result.stderr)
+                                      console.log('STDERR: ' + result.stderr)
+                                  })
+                                }
                               })
                             }
                           })

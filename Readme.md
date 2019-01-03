@@ -25,7 +25,8 @@ new ProgressEndCompressPlugin({
     port: 22,
     password: '123456',
     romotePath: '/home/reedsec/web/web-api-c2b/web-view/',
-    replaceDirectly: false
+    replaceDirectly: false, // whether replace build folder
+    rename: 'dist-new' // whether rename build folder name
   }
 })
 
