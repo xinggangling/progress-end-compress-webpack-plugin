@@ -69,14 +69,14 @@ module.exports = {
           hash: nowString
         }]
       },
-      // sshConfig: {
-      //   host: '192.168.3.116',
-      //   username: 'root',
-      //   port: 22,
-      //   password: 'Reedsec888',
-      //   romotePath: '/home/reedsec/web/web-api-c2b/web-view/',
-      //   replaceDirectly: false
-      // }
+      sshConfig: {
+        host: '192.168.3.116',
+        username: 'root',
+        port: 22,
+        password: 'Reedsec888',
+        romotePath: '/home/reedsec/web/web-api-c2b/web-view/',
+        replaceDirectly: false
+      }
     }),
     new HtmlWebpackPlugin({
       template: 'index.html',
@@ -98,8 +98,8 @@ module.exports = {
   node: {
     dgram: 'empty',
     fs: 'empty',
-    net: 'empty',
-    tls: 'empty',
+    // net: 'empty',
+    // tls: 'empty',
     child_process: 'empty',
     module: 'empty'
   }

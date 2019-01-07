@@ -10,14 +10,11 @@ var ssh = new node_ssh()
 require('object.assign').shim();
 
 module.exports = function ProgressEndCompressPlugin(options) {
+
   options = options || {};
 
   var stream = options.stream || process.stderr;
   var enabled = stream && stream.isTTY;
-
-  if (!enabled) {
-    return function () {};
-  }
 
   var barLeft = chalk.bold('[');
   var barRight = chalk.bold(']');
@@ -47,113 +44,215 @@ module.exports = function ProgressEndCompressPlugin(options) {
   var startTime = 0;
   var lastPercent = 0;
 
-  return new webpack.ProgressPlugin(function (percent, msg) {
-    if (!running && lastPercent !== 0 && !customSummary) {
-      stream.write('\n');
-    }
+  if (!enabled) {
+    return new webpack.ProgressPlugin(function (percent, msg) {
 
-    var newPercent = Math.ceil(percent * barOptions.width);
+      if (!running && lastPercent !== 0 && !customSummary) {
+        // stream.write('\n');
+      }
 
-    if (lastPercent !== newPercent) {
-      bar.update(percent, {
-        msg: msg
-      });
-      lastPercent = newPercent;
-    }
+      var newPercent = Math.ceil(percent * barOptions.width);
 
-    if (!running) {
-      running = true;
-      startTime = new Date;
-      lastPercent = 0;
-    } else if (percent === 1) {
-      var now = new Date;
-      var buildTime = (now - startTime) / 1000 + 's';
+      // if (lastPercent !== newPercent) {
+      //   bar.update(percent, {
+      //     msg: msg
+      //   });
+      //   lastPercent = newPercent;
+      // }
 
-      bar.terminate();
+      if (!running) {
+        running = true;
+        startTime = new Date;
+        lastPercent = 0;
+      } else if (percent === 1) {
+        var now = new Date;
+        var buildTime = (now - startTime) / 1000 + 's';
 
-      if (summary) {
-        setTimeout(function() {
-          stream.write('\n')
-          stream.write(chalk.green.bold('Build completed in ' + buildTime + '\n\n'));
-          if (options.compressDir && options.compressDir.paths) {
-            for (var i = 0; i < options.compressDir.paths.length; i++) {
-              try {
-                var sourceDir = options.compressDir.paths[i].sourceDir;
-                var targetDir = options.compressDir.paths[i].targetDir;
-                var name = options.compressDir.paths[i].name;
-                var hash = options.compressDir.paths[i].hash || Date.now();
-                var compressFile = name + '.' + hash + '.tgz';
-                var rename = options.compressDir.paths[i].rename;
-                var compressPromise = new Promise(function() {
-                  var self = this;
-                  compressing.tgz.compressDir(sourceDir, path.join(targetDir, compressFile))
-                    .then(function() {
-                      var config = options.sshConfig;
-                      
-                      if (process.argv.includes('--useSsh') && /^\w*.\d*.tgz/.test(compressFile)) {
-                        ssh.connect({
-                          host: config.host,
-                          username: config.username,
-                          port: config.port,
-                          password: config.password
-                        }).then(function() {
-                          ssh.putFile(path.join(targetDir, compressFile), config.romotePath + compressFile).then(function(Contents) {
-                            console.log(chalk.green.bold(compressFile + ' has been successfully uploaded to ' + config.host + ': ' + config.romotePath));
-                          }, function(error) {
-                            console.log(chalk.red.bold("Something's wrong --> "));
-                            console.log(error)
+        if (summary) {
+          setTimeout(function() {
+            console.log('\n')
+            console.log(chalk.green.bold('Build completed in ' + buildTime + '\n\n'));
+            if (options.compressDir && options.compressDir.paths) {
+              for (var i = 0; i < options.compressDir.paths.length; i++) {
+                try {
+                  var sourceDir = options.compressDir.paths[i].sourceDir;
+                  var targetDir = options.compressDir.paths[i].targetDir;
+                  var name = options.compressDir.paths[i].name;
+                  var hash = options.compressDir.paths[i].hash || Date.now();
+                  var compressFile = name + '.' + hash + '.tgz';
+                  var rename = options.compressDir.paths[i].rename;
+                  var compressPromise = new Promise(function() {
+                    var self = this;
+                    compressing.tgz.compressDir(sourceDir, path.join(targetDir, compressFile))
+                      .then(function() {
+                        var config = options.sshConfig;
+                        
+                        if (process.argv.includes('--useSsh') && /^\w*.\d*.tgz/.test(compressFile)) {
+                          ssh.connect({
+                            host: config.host,
+                            username: config.username,
+                            port: config.port,
+                            password: config.password
                           }).then(function() {
-                            if (config.replaceDirectly) {
-                              ssh.execCommand('rm -rf ' + name, { cwd: config.romotePath }).then(function(result) {
-                                if (result.stdout)
-                                  console.log('STDOUT: ' + result.stdout)
-                                if (result.stderr)
-                                  console.log('STDERR: ' + result.stderr)
-                              }).then(function() {
-                                ssh.execCommand('tar zxvf ' + compressFile, { cwd: config.romotePath }).then(function(result) {
+                            ssh.putFile(path.join(targetDir, compressFile), config.romotePath + compressFile).then(function(Contents) {
+                              console.log(chalk.green.bold(compressFile + ' has been successfully uploaded to ' + config.host + ': ' + config.romotePath));
+                            }, function(error) {
+                              console.log(chalk.red.bold("Something's wrong --> "));
+                              console.log(error)
+                            }).then(function() {
+                              if (config.replaceDirectly) {
+                                ssh.execCommand('rm -rf ' + name, { cwd: config.romotePath }).then(function(result) {
                                   if (result.stdout)
-                                      console.log('STDOUT: ' + result.stdout)
+                                    console.log('STDOUT: ' + result.stdout)
                                   if (result.stderr)
                                     console.log('STDERR: ' + result.stderr)
-                                })
-                              }).then(function() {
-                                if (rename) {
-                                  ssh.execCommand('mv ' + compressFile + ' ' + rename, { cwd: config.romotePath }).then(function(result) {
+                                }).then(function() {
+                                  ssh.execCommand('tar zxvf ' + compressFile, { cwd: config.romotePath }).then(function(result) {
                                     if (result.stdout)
-                                      console.log('STDOUT: ' + result.stdout)
+                                        console.log('STDOUT: ' + result.stdout)
                                     if (result.stderr)
                                       console.log('STDERR: ' + result.stderr)
                                   })
-                                }
-                              })
-                            }
+                                }).then(function() {
+                                  if (rename) {
+                                    ssh.execCommand('mv ' + compressFile + ' ' + rename, { cwd: config.romotePath }).then(function(result) {
+                                      if (result.stdout)
+                                        console.log('STDOUT: ' + result.stdout)
+                                      if (result.stderr)
+                                        console.log('STDERR: ' + result.stderr)
+                                    })
+                                  }
+                                })
+                              }
+                            })
                           })
-                        })
-                      }
-                      console.log(chalk.green.bold('created: ' + compressFile + '\n'));
-                    })
-                    .catch(self.handleError);
-                })
-    
-                compressPromise.then(function() {
-                  console.log('compress success')
-                })
-                
-              } catch(e) {
-                // console.log('')
-              }          
+                        }
+                        console.log(chalk.green.bold('created: ' + compressFile + '\n'));
+                      })
+                      .catch(self.handleError);
+                  })
+                } catch(e) {
+                  // console.log('')
+                }          
+              }
             }
-          }
-        }, 100)
-      } else if (summaryContent) {
-        stream.write(summaryContent + '(' + buildTime + ')\n\n');
+          }, 100)
+        }
+
+        running = false;
+      }
+    });
+  } else {
+    return new webpack.ProgressPlugin(function (percent, msg) {
+
+      if (!running && lastPercent !== 0 && !customSummary) {
+        stream.write('\n');
       }
 
-      if (customSummary) {
-        customSummary(buildTime);
+      var newPercent = Math.ceil(percent * barOptions.width);
+
+      if (lastPercent !== newPercent) {
+        bar.update(percent, {
+          msg: msg
+        });
+        lastPercent = newPercent;
       }
 
-      running = false;
-    }
-  });
+      if (!running) {
+        running = true;
+        startTime = new Date;
+        lastPercent = 0;
+      } else if (percent === 1) {
+        var now = new Date;
+        var buildTime = (now - startTime) / 1000 + 's';
+
+        bar.terminate();
+
+        if (summary) {
+          setTimeout(function() {
+            stream.write('\n')
+            stream.write(chalk.green.bold('Build completed in ' + buildTime + '\n\n'));
+            if (options.compressDir && options.compressDir.paths) {
+              for (var i = 0; i < options.compressDir.paths.length; i++) {
+                try {
+                  var sourceDir = options.compressDir.paths[i].sourceDir;
+                  var targetDir = options.compressDir.paths[i].targetDir;
+                  var name = options.compressDir.paths[i].name;
+                  var hash = options.compressDir.paths[i].hash || Date.now();
+                  var compressFile = name + '.' + hash + '.tgz';
+                  var rename = options.compressDir.paths[i].rename;
+                  var compressPromise = new Promise(function() {
+                    var self = this;
+                    compressing.tgz.compressDir(sourceDir, path.join(targetDir, compressFile))
+                      .then(function() {
+                        var config = options.sshConfig;
+                        
+                        if (process.argv.includes('--useSsh') && /^\w*.\d*.tgz/.test(compressFile)) {
+                          ssh.connect({
+                            host: config.host,
+                            username: config.username,
+                            port: config.port,
+                            password: config.password
+                          }).then(function() {
+                            ssh.putFile(path.join(targetDir, compressFile), config.romotePath + compressFile).then(function(Contents) {
+                              console.log(chalk.green.bold(compressFile + ' has been successfully uploaded to ' + config.host + ': ' + config.romotePath));
+                            }, function(error) {
+                              console.log(chalk.red.bold("Something's wrong --> "));
+                              console.log(error)
+                            }).then(function() {
+                              if (config.replaceDirectly) {
+                                ssh.execCommand('rm -rf ' + name, { cwd: config.romotePath }).then(function(result) {
+                                  if (result.stdout)
+                                    console.log('STDOUT: ' + result.stdout)
+                                  if (result.stderr)
+                                    console.log('STDERR: ' + result.stderr)
+                                }).then(function() {
+                                  ssh.execCommand('tar zxvf ' + compressFile, { cwd: config.romotePath }).then(function(result) {
+                                    if (result.stdout)
+                                        console.log('STDOUT: ' + result.stdout)
+                                    if (result.stderr)
+                                      console.log('STDERR: ' + result.stderr)
+                                  })
+                                }).then(function() {
+                                  if (rename) {
+                                    ssh.execCommand('mv ' + compressFile + ' ' + rename, { cwd: config.romotePath }).then(function(result) {
+                                      if (result.stdout)
+                                        console.log('STDOUT: ' + result.stdout)
+                                      if (result.stderr)
+                                        console.log('STDERR: ' + result.stderr)
+                                    })
+                                  }
+                                })
+                              }
+                            })
+                          })
+                        }
+                        console.log(chalk.green.bold('created: ' + compressFile + '\n'));
+                      })
+                      .catch(self.handleError);
+                  })
+      
+                  compressPromise.then(function() {
+                    console.log('compress success')
+                  })
+                  
+                } catch(e) {
+                  // console.log('')
+                }          
+              }
+            }
+          }, 100)
+        } else if (summaryContent) {
+          stream.write(summaryContent + '(' + buildTime + ')\n\n');
+        }
+
+        if (customSummary) {
+          customSummary(buildTime);
+        }
+
+        running = false;
+      }
+    });
+  }
+
 };
