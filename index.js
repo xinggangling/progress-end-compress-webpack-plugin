@@ -2,7 +2,7 @@ var path = require('path');
 var ProgressBar = require('progress');
 var chalk = require('chalk');
 var webpack = require('webpack');
-var compressing = require('compressing');
+var compressing = require('./compress');
 
 var node_ssh = require('node-ssh')
 var ssh = new node_ssh()
