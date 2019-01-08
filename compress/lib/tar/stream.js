@@ -75,12 +75,12 @@ class TarStream extends BaseStream {
       files.forEach(fileOrDir => {
         const newOpts = utils.clone(opts);
         if (opts.ignoreBase) {
-          newOpts.relativePath = path.join(relativePath, fileOrDir);
+          newOpts.relativePath = path.join(relativePath, fileOrDir).replace(/\\/g, '/'); // 替换 \\ 成 /
         } else {
-          newOpts.relativePath = path.join(relativePath, path.basename(entry), fileOrDir);
+          newOpts.relativePath = path.join(relativePath, path.basename(entry), fileOrDir).replace(/\\/g, '/');
         }
         newOpts.ignoreBase = true;
-        this.addEntry(path.join(entry, fileOrDir), newOpts);
+        this.addEntry(path.join(entry, fileOrDir).replace(/\\/g, '/'), newOpts);
       });
       this._onEntryFinish();
     });

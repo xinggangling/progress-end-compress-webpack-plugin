@@ -74,7 +74,7 @@ module.exports = {
         username: 'root',
         port: 22,
         password: 'Reedsec888',
-        romotePath: '/home/reedsec/web/web-api-c2b/web-view/',
+        romotePath: '/home/reedsec/web/web-api-c2b/web-view/test/',
         replaceDirectly: false
       }
     }),
