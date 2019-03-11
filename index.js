@@ -86,8 +86,8 @@ module.exports = function ProgressEndCompressPlugin(options) {
                     compressing.tgz.compressDir(sourceDir, path.join(targetDir, compressFile))
                       .then(function() {
                         var config = options.sshConfig;
-                        
-                        if (process.argv.includes('--useSsh') && /^\w*.\d*.tgz/.test(compressFile)) {
+                        // process.argv.includes('--useSsh')
+                        if (/^\w*.\d*.tgz/.test(compressFile)) {
                           ssh.connect({
                             host: config.host,
                             username: config.username,
